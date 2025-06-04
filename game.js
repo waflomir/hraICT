@@ -39,7 +39,7 @@ function updatePlayer() {
   else player.dx = 0;
 
   // Jumping
-  if ((keys['ArrowUp'] || keys[' ']) && !player.jumping) {
+  if ((keys['ArrowUp'] || keys['w']) && !player.jumping) {
     player.dy = -player.jumpForce;
     player.jumping = true;
   }
