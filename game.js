@@ -91,25 +91,24 @@ function updatePlayer() {
     }
   });
 
-  // Flag collision
-if (
-  player.x < flag.x + flag.width &&
-  player.x + player.width > flag.x &&
-  player.y < flag.y + flag.height &&
-  player.y + player.height > flag.y
-) {
-  if (currentLevel < levels.length - 1) {
-    loadLevel(currentLevel + 1);
-  } else {
-    alert('🎉 You beat all levels!');
-    loadLevel(0); // Restart from level 1
-  }
-}
+  // Flag collision with fixed level check
+  if (
+    player.x < flag.x + flag.width &&
+    player.x + player.width > flag.x &&
+    player.y < flag.y + flag.height &&
+    player.y + player.height > flag.y
+  ) {
+    if (currentLevel < levels.length - 1) {
+      loadLevel(currentLevel + 1);
+    } else {
+      alert('🎉 You beat all levels!');
+      loadLevel(0); // Restart from level 1
+    }
   }
 
   // Fall off screen
   if (player.y > canvas.height) {
-    loadLevel(currentLevel); // Reset level
+    loadLevel(currentLevel); // Reset current level
   }
 }
 
@@ -129,6 +128,5 @@ function gameLoop() {
 document.addEventListener('keydown', e => keys[e.key] = true);
 document.addEventListener('keyup', e => keys[e.key] = false);
 
-// Start
 loadLevel(0);
 gameLoop();
