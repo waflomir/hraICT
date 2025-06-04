@@ -92,18 +92,19 @@ function updatePlayer() {
   });
 
   // Flag collision
-  if (
-    player.x < flag.x + flag.width &&
-    player.x + player.width > flag.x &&
-    player.y < flag.y + flag.height &&
-    player.y + player.height > flag.y
-  ) {
-    if (currentLevel + 1 < levels.length) {
-      loadLevel(currentLevel + 1);
-    } else {
-      alert('🎉 You beat all levels!');
-      loadLevel(0); // Restart
-    }
+if (
+  player.x < flag.x + flag.width &&
+  player.x + player.width > flag.x &&
+  player.y < flag.y + flag.height &&
+  player.y + player.height > flag.y
+) {
+  if (currentLevel < levels.length - 1) {
+    loadLevel(currentLevel + 1);
+  } else {
+    alert('🎉 You beat all levels!');
+    loadLevel(0); // Restart from level 1
+  }
+}
   }
 
   // Fall off screen
