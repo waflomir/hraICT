@@ -12,18 +12,33 @@ const player = {
   dx: 0,
   dy: 0,
   speed: 3,
-  jumpForce: 10,
-  jumping: false
+  jumpForce: 10
 };
 
-const platforms = [
-  { x: 0, y: 350, width: 800, height: 50 },
-  { x: 200, y: 300, width: 100, height: 10 },
-  { x: 400, y: 250, width: 100, height: 10 },
-  { x: 600, y: 200, width: 100, height: 10 }
+// Define levels
+const levels = [
+  {
+    platforms: [
+      { x: 0, y: 350, width: 800, height: 50 },
+      { x: 200, y: 300, width: 100, height: 10 },
+      { x: 400, y: 250, width: 100, height: 10 },
+      { x: 600, y: 200, width: 100, height: 10 }
+    ],
+    flag: { x: 720, y: 160, width: 20, height: 40 }
+  },
+  {
+    platforms: [
+      { x: 0, y: 350, width: 800, height: 50 },
+      { x: 100, y: 280, width: 100, height: 10 },
+      { x: 250, y: 220, width: 100, height: 10 },
+      { x: 400, y: 160, width: 100, height: 10 },
+      { x: 550, y: 100, width: 100, height: 10 }
+    ],
+    flag: { x: 670, y: 60, width: 20, height: 40 }
+  }
 ];
 
-const flag = { x: 720, y: 160, width: 20, height: 40 };
+let currentLevel = 0;
 
 function drawRect(obj) {
   ctx.fillStyle = obj.color || 'black';
@@ -39,13 +54,22 @@ function isOnGround(player, platforms) {
   );
 }
 
+function loadLevel(index) {
+  currentLevel = index;
+  player.x = 50;
+  player.y = 300;
+  player.dy = 0;
+}
+
 function updatePlayer() {
-  // Movement
+  const level = levels[currentLevel];
+  const platforms = level.platforms;
+  const flag = level.flag;
+
   player.dx = 0;
   if (keys['ArrowRight'] || keys['d']) player.dx = player.speed;
   if (keys['ArrowLeft'] || keys['a']) player.dx = -player.speed;
 
-  // Jump
   if ((keys['ArrowUp'] || keys[' ']) && isOnGround(player, platforms)) {
     player.dy = -player.jumpForce;
   }
@@ -54,7 +78,7 @@ function updatePlayer() {
   player.x += player.dx;
   player.y += player.dy;
 
-  // Landing on platforms
+  // Platform collision
   platforms.forEach(p => {
     if (
       player.x < p.x + p.width &&
@@ -67,34 +91,36 @@ function updatePlayer() {
     }
   });
 
-  // Win condition
+  // Flag collision
   if (
     player.x < flag.x + flag.width &&
     player.x + player.width > flag.x &&
     player.y < flag.y + flag.height &&
     player.y + player.height > flag.y
   ) {
-    alert('🎉 You win!');
-    player.x = 50;
-    player.y = 300;
-    player.dy = 0;
+    if (currentLevel + 1 < levels.length) {
+      loadLevel(currentLevel + 1);
+    } else {
+      alert('🎉 You beat all levels!');
+      loadLevel(0); // Restart
+    }
   }
 
   // Fall off screen
   if (player.y > canvas.height) {
-    player.x = 50;
-    player.y = 300;
-    player.dy = 0;
+    loadLevel(currentLevel); // Reset level
   }
 }
 
 function gameLoop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+  const level = levels[currentLevel];
   updatePlayer();
   drawRect({ ...player, color: 'red' });
-  platforms.forEach(p => drawRect({ ...p, color: 'green' }));
-  drawRect({ ...flag, color: 'yellow' });
+
+  level.platforms.forEach(p => drawRect({ ...p, color: 'green' }));
+  drawRect({ ...level.flag, color: 'yellow' });
 
   requestAnimationFrame(gameLoop);
 }
@@ -102,4 +128,6 @@ function gameLoop() {
 document.addEventListener('keydown', e => keys[e.key] = true);
 document.addEventListener('keyup', e => keys[e.key] = false);
 
+// Start
+loadLevel(0);
 gameLoop();
