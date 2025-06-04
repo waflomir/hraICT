@@ -1,16 +1,14 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-let gravity = 0.5;
-let friction = 0.8;
-let keys = {};
+const gravity = 0.5;
+const keys = {};
 
-let player = {
+const player = {
   x: 50,
   y: 300,
   width: 30,
   height: 30,
-  color: 'red',
   dx: 0,
   dy: 0,
   speed: 3,
@@ -18,49 +16,54 @@ let player = {
   jumping: false
 };
 
-let platforms = [
+const platforms = [
   { x: 0, y: 350, width: 800, height: 50 },
   { x: 200, y: 300, width: 100, height: 10 },
   { x: 400, y: 250, width: 100, height: 10 },
   { x: 600, y: 200, width: 100, height: 10 }
 ];
 
-let flag = { x: 720, y: 160, width: 20, height: 40 };
+const flag = { x: 720, y: 160, width: 20, height: 40 };
 
 function drawRect(obj) {
   ctx.fillStyle = obj.color || 'black';
   ctx.fillRect(obj.x, obj.y, obj.width, obj.height);
 }
 
-function updatePlayer() {
-  // Horizontal movement
-  if (keys['ArrowRight'] || keys['d']) player.dx = player.speed;
-  else if (keys['ArrowLeft'] || keys['a']) player.dx = -player.speed;
-  else player.dx = 0;
+function isOnGround(player, platforms) {
+  return platforms.some(p =>
+    player.x + player.width > p.x &&
+    player.x < p.x + p.width &&
+    player.y + player.height >= p.y &&
+    player.y + player.height <= p.y + 5
+  );
+}
 
-  // Jumping
-  if ((keys['ArrowUp'] || keys['w']) && !player.jumping) {
+function updatePlayer() {
+  // Movement
+  player.dx = 0;
+  if (keys['ArrowRight'] || keys['d']) player.dx = player.speed;
+  if (keys['ArrowLeft'] || keys['a']) player.dx = -player.speed;
+
+  // Jump
+  if ((keys['ArrowUp'] || keys[' ']) && isOnGround(player, platforms)) {
     player.dy = -player.jumpForce;
-    player.jumping = true;
   }
 
   player.dy += gravity;
   player.x += player.dx;
   player.y += player.dy;
 
-  // Simple floor/platform collision
-  player.jumping = true; // Assume jumping unless proven otherwise
-
+  // Landing on platforms
   platforms.forEach(p => {
     if (
       player.x < p.x + p.width &&
       player.x + player.width > p.x &&
-      player.y + player.height <= p.y &&
+      player.y + player.height <= p.y + player.dy &&
       player.y + player.height + player.dy >= p.y
     ) {
       player.y = p.y - player.height;
       player.dy = 0;
-      player.jumping = false;
     }
   });
 
@@ -77,7 +80,7 @@ function updatePlayer() {
     player.dy = 0;
   }
 
-  // Boundaries
+  // Fall off screen
   if (player.y > canvas.height) {
     player.x = 50;
     player.y = 300;
@@ -89,19 +92,14 @@ function gameLoop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   updatePlayer();
-  drawRect(player);
-
+  drawRect({ ...player, color: 'red' });
   platforms.forEach(p => drawRect({ ...p, color: 'green' }));
   drawRect({ ...flag, color: 'yellow' });
 
   requestAnimationFrame(gameLoop);
 }
 
-document.addEventListener('keydown', e => {
-  keys[e.key] = true;
-});
-document.addEventListener('keyup', e => {
-  keys[e.key] = false;
-});
+document.addEventListener('keydown', e => keys[e.key] = true);
+document.addEventListener('keyup', e => keys[e.key] = false);
 
 gameLoop();
